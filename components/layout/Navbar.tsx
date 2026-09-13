@@ -152,7 +152,18 @@ export function Navbar() {
                     Account & Billing
                   </Link>
                   <button
-                    onClick={() => { signOut({ callbackUrl: "/" }); setMenuOpen(false); }}
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      // Revoke GitHub's authorization for this app first, so the next
+                      // sign-in shows GitHub's authorize page instead of silently
+                      // reusing whichever account is already logged into GitHub.
+                      try {
+                        await fetch("/api/auth/disconnect-github", { method: "POST" });
+                      } catch {
+                        // Sign out anyway even if the revoke call fails.
+                      }
+                      signOut({ callbackUrl: "/" });
+                    }}
                     className="w-full text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800/70 hover:text-white transition-colors"
                   >
                     Sign Out
