@@ -49,4 +49,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
+  events: {
+    // Auth.js only calls the adapter's linkAccount() the first time an
+    // OAuth account is linked. On every later sign-in it reuses the
+    // existing Account row as-is, so the stored access_token goes stale
+    // forever once GitHub invalidates it. Refresh it on every sign-in.
+    async signIn({ account }) {
+      if (account?.provider === "github" && account.access_token) {
+        await prisma.account.updateMany({
+          where: { provider: "github", providerAccountId: account.providerAccountId },
+          data: {
+            access_token: account.access_token,
+            token_type: account.token_type,
+            scope: account.scope,
+          },
+        });
+      }
+    },
+  },
 });
