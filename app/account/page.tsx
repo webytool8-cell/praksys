@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserPlan, PLAN_LIMITS } from "@/lib/subscription";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
+import { ConnectedAccounts } from "@/components/account/ConnectedAccounts";
 
 const PLAN_LABELS: Record<string, string> = {
   free: "Free",
@@ -24,7 +25,7 @@ export default async function AccountPage({
     getUserPlan(session.user.id),
     prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { name: true, email: true, image: true },
+      select: { name: true, email: true, image: true, githubUsername: true },
     }),
     prisma.analysis.findMany({
       where: { userId: session.user.id },
@@ -102,6 +103,8 @@ export default async function AccountPage({
           )}
         </div>
       </Panel>
+
+      <ConnectedAccounts githubUsername={user?.githubUsername ?? null} image={user?.image ?? null} />
 
       <Panel className="p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-4">
